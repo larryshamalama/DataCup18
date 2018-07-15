@@ -52,64 +52,33 @@ def conv_pool_1d_layer(_input,
     assert prefix != ''
     
     CONV_STRIDES = 1
-    POOL_STRIDES = 3
-    POOL_SIZE    = 3
+    POOL_STRIDES = 1
+    POOL_SIZE    = 2
     LEAKY_ALPHA  = 0.2
-    
+    print('e98h')
     with tf.variable_scope(prefix):
         conv_matrix = new_variable(name='conv_matrix', shape=[filter_size, num_input_channels, num_output])
         bias        = new_variable(name='bias', shape=[num_output])
         
-
+    print('e')
     conv_layer = tf.nn.conv1d(value=_input,
                               filters=conv_matrix,
                               stride=CONV_STRIDES,
                               padding='SAME',
                               name='conv_layer')
     
+    conv_layer += bias
 
     if max_pooling:
-        pooled_layer = tf.layers.max_pooling1d(intputs=conv_layer,
+        pooled_layer = tf.layers.max_pooling1d(inputs=conv_layer,
                                                pool_size=POOL_SIZE,
                                                strides=POOL_STRIDES,
                                                name='pooled_layer')
     else:
         pooled_layer = conv_layer
-        
-    pooled_layer += bias
+
     
     if use_relu:
         return tf.nn.leaky_relu(pooled_layer, alpha=LEAKY_ALPHA)
     
     return pooled_layer
-
-
-def conv_pool_2d_layer(_input,            
-                       filter_size,
-                       num_input_channels,       
-                       num_filters,
-                       strides,
-                       name,
-                       use_pooling=True,
-                       max_pooling_strides=[1, 3, 3, 1]): 
-
-    shape   = [filter_size, filter_size, num_input_channels, num_filters]
-    weights = new_variable(shape=shape, name='weights')
-    biases  = new_variable(shape=num_filters, name='bias') # one for each filter
-
-    layer = tf.nn.conv2d(input=input,
-                         filter=weights,
-                         strides=strides,
-                         padding='SAME')
-
-    layer += biases
-    
-    layer = tf.nn.leaky_relu(layer, name=name)
-    
-    if use_pooling:
-        layer = tf.nn.max_pool(value=layer,
-                               ksize=[1, 3, 3, 1],
-                               strides=max_pooling_strides,
-                               padding='SAME')
-
-    return layer
